@@ -1,0 +1,180 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "47B602C5",
+  "nonRenewingSubscriptions" : [
+    {
+      "displayPrice" : "69",
+      "familyShareable" : false,
+      "internalID" : "3AD69801",
+      "localizations" : [
+        {
+          "description" : "This is Non-Renew Subscription.",
+          "displayName" : "Monthly",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.akash.nonRenew.monthly",
+      "referenceName" : "MonthlyPlan",
+      "type" : "NonRenewingSubscription"
+    }
+  ],
+  "products" : [
+    {
+      "displayPrice" : "5",
+      "familyShareable" : false,
+      "internalID" : "E40F69FB",
+      "localizations" : [
+        {
+          "description" : "This is Consumable Plan.",
+          "displayName" : "Gemes",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.akash.consumable.gems",
+      "referenceName" : "Gems",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "669",
+      "familyShareable" : false,
+      "internalID" : "DDE98EFF",
+      "localizations" : [
+        {
+          "description" : "This is NonConsumable Plan",
+          "displayName" : "LifeTime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.akash.nonConsumable.lifetime",
+      "referenceName" : "LifeTime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_compatibilityTimeRate" : {
+      "3" : 6
+    },
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : {
+          "index" : 3,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : {
+          "index" : 1,
+          "type" : "purchase"
+        },
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : {
+          "index" : 0,
+          "type" : "verification"
+        },
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : {
+          "index" : 2,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ],
+    "_timeRate" : 1002
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "EC84014E",
+      "localizations" : [
+
+      ],
+      "name" : "Auto-Renew",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "20",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "495CF29F",
+          "introductoryOffer" : {
+            "internalID" : "770DDDB4",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
+          "localizations" : [
+            {
+              "description" : "This is Auto-Renew Subscription",
+              "displayName" : "Weekly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.akash.autoRenew.weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "WeeklyPlan",
+          "subscriptionGroupID" : "EC84014E",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
