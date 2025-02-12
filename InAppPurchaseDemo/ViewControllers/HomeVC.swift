@@ -14,11 +14,6 @@ class HomeVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        IAPManager.shared.getActivePlan(success: { purchasedProductIds in
-            print(purchasedProductIds)
-        }, failure: { error in
-            print(error)
-        })
         doInitSetup()
     }
     
@@ -30,6 +25,12 @@ class HomeVC: UIViewController {
                           "com.akash.consumable.gems"]
         IAPManager.shared.loadProducts(productIDs: productsId, success: { products in
             self.availableProducts = products
+        })
+        
+        IAPManager.shared.getActivePlan(success: { _ in
+            print(UserManager.shared.currentUserType)
+        }, failure: { error in
+            print(error)
         })
     }
 }
@@ -55,6 +56,11 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
         let product = availableProducts[indexPath.row]
         cell.planTitle.text = product.displayName
         cell.planPrice.text = product.displayPrice
+        Task {
+            if let introOffer = await IAPManager.shared.getIntroOffer(from: product) {
+                cell.planDescription.text = "\(introOffer.period)"
+            }
+        }
         cell.planDescription.text = product.description
         return cell
     }
@@ -68,7 +74,7 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
             case .pending:
                 print("Purchase go in pending")
             case .userCancelled:
-                print("user canceled Purchase He He Hello Pratik")
+                print("user canceled Purchase")
             case .unknown:
                 print("Purchase Fail")
             case .error(let error):

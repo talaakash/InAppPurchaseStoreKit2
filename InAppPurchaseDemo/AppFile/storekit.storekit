@@ -62,9 +62,6 @@
   "settings" : {
     "_askToBuyEnabled" : false,
     "_billingIssuesEnabled" : false,
-    "_compatibilityTimeRate" : {
-      "3" : 6
-    },
     "_failTransactionsEnabled" : false,
     "_locale" : "en_US",
     "_renewalBillingIssuesEnabled" : false,
@@ -95,7 +92,10 @@
         "name" : "Verification"
       },
       {
-        "current" : null,
+        "current" : {
+          "index" : 2,
+          "type" : "generic"
+        },
         "enabled" : false,
         "name" : "App Store Sync"
       },
@@ -108,27 +108,39 @@
         "name" : "Subscription Status"
       },
       {
-        "current" : null,
+        "current" : {
+          "index" : 3,
+          "type" : "generic"
+        },
         "enabled" : false,
         "name" : "App Transaction"
       },
       {
-        "current" : null,
+        "current" : {
+          "index" : 3,
+          "type" : "generic"
+        },
         "enabled" : false,
         "name" : "Manage Subscriptions Sheet"
       },
       {
-        "current" : null,
+        "current" : {
+          "index" : 0,
+          "type" : "refund request"
+        },
         "enabled" : false,
         "name" : "Refund Request Sheet"
       },
       {
-        "current" : null,
+        "current" : {
+          "index" : 4,
+          "type" : "generic"
+        },
         "enabled" : false,
         "name" : "Offer Code Redeem Sheet"
       }
     ],
-    "_timeRate" : 1002
+    "_timeRate" : 0
   },
   "subscriptionGroups" : [
     {
@@ -150,7 +162,8 @@
           "groupNumber" : 1,
           "internalID" : "495CF29F",
           "introductoryOffer" : {
-            "internalID" : "770DDDB4",
+            "displayPrice" : "0.99",
+            "internalID" : "239EF520",
             "paymentMode" : "free",
             "subscriptionPeriod" : "P3D"
           },

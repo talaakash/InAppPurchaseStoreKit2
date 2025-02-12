@@ -1,7 +1,7 @@
 import Foundation
 
 enum UserType {
-    case free, paid
+    case free, paid, trial
 }
 
 class UserManager {
@@ -12,6 +12,8 @@ class UserManager {
             case .free:
                 UserDefaults.standard.setValue(false, forKey: "isPremiumUnlocked")
             case .paid:
+                UserDefaults.standard.setValue(true, forKey: "isPremiumUnlocked")
+            case .trial:
                 UserDefaults.standard.setValue(true, forKey: "isPremiumUnlocked")
             }
         }
