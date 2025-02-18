@@ -101,53 +101,65 @@ extension IAPManager {
     /// This function is for purchase Product
     /// This function success completion return current product id if purchase success and verified
     ///  This function failure return PurchaseError enum if transaction have any problem or successful transaction cant verify then it simply return in error variable or if transaction get pending or userCanceled or unknown then return according it
-    func purchaseProduct(_ product: Product, success: @escaping (Transaction) -> Void, failure: @escaping (PurchaseError) -> Void) {
+    func purchaseProduct(_ product: Product, in viewController: UIViewController, success: @escaping (Transaction) -> Void, failure: @escaping (PurchaseError) -> Void) {
         Task {
             do {
-                let result = try await product.purchase()
-                DispatchQueue.main.async {
-                    switch result {
-                    case let .success(.verified(transaction)):
-                        Task {
-                            await transaction.finish()
-                            debugPrint("Completed purchase with Transaction: \(transaction)")
-                            
-                            /// For the consumable products only because currentEntitlements not return consumable products
-                            if transaction.productType == .consumable {
-                                DispatchQueue.main.async {
-                                    success(transaction)
-                                }
-                                return
+                var result:Product.PurchaseResult
+                if #available(iOS 18.2, *) {
+                    result = try await product.purchase(confirmIn: viewController)
+                } else {
+                    // Fallback on earlier versions
+                    result = try await product.purchase()
+                }
+                switch result {
+                case let .success(.verified(transaction)):
+                    Task {
+                        await transaction.finish()
+                        debugPrint("Completed purchase with Transaction: \(transaction)")
+                        
+                        /// For the consumable products only because currentEntitlements not return consumable products
+                        if transaction.productType == .consumable {
+                            DispatchQueue.main.async {
+                                success(transaction)
                             }
-                            
-                            /// Here we add currentEntitlements so we can re-verify about purchase and unlock premium according that
-                            self.getActivePlan(success: { allPurchasedProductIds in
-                                DispatchQueue.main.async {
-                                    if allPurchasedProductIds.contains(where: { $0.productID == product.id }) {
-                                        success(transaction)
-                                    } else {
-                                        failure(PurchaseError.unverified)
-                                    }
-                                }
-                            }, failure: { error in
-                                DispatchQueue.main.async {
-                                    failure(PurchaseError.error(error))
-                                }
-                            })
+                            return
                         }
-                    case let .success(.unverified(_, error)):
-                        debugPrint("Unverified purchase. Might be jailbroken. Error: \(error.localizedDescription)")
+                        
+                        /// Here we add currentEntitlements so we can re-verify about purchase and unlock premium according that
+                        self.getActivePlan(success: { allPurchasedProductIds in
+                            DispatchQueue.main.async {
+                                if allPurchasedProductIds.contains(where: { $0.productID == product.id }) {
+                                    success(transaction)
+                                } else {
+                                    failure(PurchaseError.unverified)
+                                }
+                            }
+                        }, failure: { error in
+                            DispatchQueue.main.async {
+                                failure(PurchaseError.error(error))
+                            }
+                        })
+                    }
+                case let .success(.unverified(_, error)):
+                    debugPrint("Unverified purchase. Might be jailbroken. Error: \(error.localizedDescription)")
+                    DispatchQueue.main.async {
                         failure(PurchaseError.unverified)
-                        break
-                    case .pending:
+                    }
+                    break
+                case .pending:
+                    DispatchQueue.main.async {
                         failure(PurchaseError.pending)
-                        break
-                    case .userCancelled:
-                        debugPrint("User Cancelled!")
+                    }
+                    break
+                case .userCancelled:
+                    debugPrint("User Cancelled!")
+                    DispatchQueue.main.async {
                         failure(PurchaseError.userCancelled)
-                        break
-                    @unknown default:
-                        debugPrint("Failed to purchase the product!")
+                    }
+                    break
+                @unknown default:
+                    debugPrint("Failed to purchase the product!")
+                    DispatchQueue.main.async {
                         failure(PurchaseError.unknown)
                     }
                 }
@@ -174,6 +186,7 @@ extension IAPManager {
             for await result in Transaction.currentEntitlements {
                 switch result {
                 case .verified(let transaction):
+                    if transaction.revocationDate != nil { continue }
                     debugPrint(transaction)
                     purchasedPlan.append(transaction)
                     if (self.checkIsThisTrialPeriod(in: transaction) != nil) {
@@ -267,15 +280,17 @@ extension IAPManager {
     private func handlePromotionalOffer(success: @escaping (Transaction) -> Void, failure: @escaping (PurchaseError) -> Void) {
         Task {
             for await purchaseIntent in PurchaseIntent.intents {
-                self.purchaseProduct(purchaseIntent.product, success: { purchasedProductIds in
-                    DispatchQueue.main.async {
-                        success(purchasedProductIds)
-                    }
-                }, failure: { error in
-                    DispatchQueue.main.async {
-                        failure(error)
-                    }
-                })
+                if let appDelegate = await UIApplication.shared.delegate as? AppDelegate, let viewController = await appDelegate.window?.rootViewController {
+                    self.purchaseProduct(purchaseIntent.product, in: viewController, success: { purchasedProductIds in
+                        DispatchQueue.main.async {
+                            success(purchasedProductIds)
+                        }
+                    }, failure: { error in
+                        DispatchQueue.main.async {
+                            failure(error)
+                        }
+                    })
+                }
             }
         }
     }

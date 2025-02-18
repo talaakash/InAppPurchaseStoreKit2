@@ -67,7 +67,7 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedProduct = availableProducts[indexPath.row]
-        IAPManager.shared.purchaseProduct(selectedProduct, success: { _ in
+        IAPManager.shared.purchaseProduct(selectedProduct, in: self, success: { _ in
             
         }, failure: { purchaseError in
             switch purchaseError {
