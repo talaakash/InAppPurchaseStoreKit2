@@ -27,7 +27,7 @@ class HomeVC: UIViewController {
             self.availableProducts = products
         })
         
-        IAPManager.shared.getActivePlan(success: { _ in
+        IAPManager.shared.getActiveTransaction(success: { _ in
             print(UserManager.shared.currentUserType)
         }, failure: { error in
             print(error)

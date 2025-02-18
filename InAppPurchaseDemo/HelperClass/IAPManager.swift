@@ -76,16 +76,21 @@ extension IAPManager {
     func loadProducts(productIDs: [String], success: (([Product]) -> Void)? = nil, failure: ((ProductLoadError) -> Void)? = nil) {
         Task {
             do {
-                self.products = try await Product.products(for: productIDs)
-                DispatchQueue.main.async {
-                    if self.products.count == productIDs.count {
-                        self.isProductLoaded = true
-                        success?(self.products)
-                    } else if self.products.isEmpty {
+                let availableProducts = try await Product.products(for: productIDs)
+                if availableProducts.count == productIDs.count {
+                    self.isProductLoaded = true
+                    self.products = availableProducts
+                    DispatchQueue.main.async {
+                        success?(availableProducts)
+                    }
+                } else if self.products.isEmpty {
+                    DispatchQueue.main.async {
                         failure?(ProductLoadError.inValidProductIds)
-                    } else {
-                        let loadedProductIDs = self.products.map { $0.id }
-                        let failedProductIDs = productIDs.filter { !loadedProductIDs.contains($0) }
+                    }
+                } else {
+                    let loadedProductIDs = self.products.map { $0.id }
+                    let failedProductIDs = productIDs.filter { !loadedProductIDs.contains($0) }
+                    DispatchQueue.main.async {
                         failure?(ProductLoadError.notLoadedProductIds(failedProductIDs))
                     }
                 }
@@ -126,7 +131,7 @@ extension IAPManager {
                         }
                         
                         /// Here we add currentEntitlements so we can re-verify about purchase and unlock premium according that
-                        self.getActivePlan(success: { allPurchasedProductIds in
+                        self.getActiveTransaction(success: { allPurchasedProductIds in
                             DispatchQueue.main.async {
                                 if allPurchasedProductIds.contains(where: { $0.productID == product.id }) {
                                     success(transaction)
@@ -179,7 +184,7 @@ extension IAPManager {
     /// This function fetch all active transaction
     /// This functions success callback return productIds of currently active plans
     /// This function failure callback return failure message if no plan has been purchased or verified transaction is currently not active
-    func getActivePlan(success: @escaping ([Transaction]) -> Void, failure: @escaping FailureCallBack) {
+    func getActiveTransaction(success: @escaping ([Transaction]) -> Void, failure: @escaping FailureCallBack) {
         UserManager.shared.setUserType(type: .free)
         Task {
             var purchasedPlan: [Transaction] = []
@@ -205,7 +210,7 @@ extension IAPManager {
     
     /// This function check transaction is of trial period or purchase period
     /// This will return expire date it it is in trial period
-    private func checkIsThisTrialPeriod(in transaction: Transaction) -> Date? {
+    func checkIsThisTrialPeriod(in transaction: Transaction) -> Date? {
         if #available(iOS 17.2, *) {
             if transaction.offer?.paymentMode == .freeTrial { return transaction.expirationDate }
         } else {
@@ -217,16 +222,16 @@ extension IAPManager {
     /// This Function get all transaction details
     /// This function success callback return all purchased plan id
     /// This function failure callback return error message that user never purchased anything
-    private func allTransactionOfUser(success: @escaping ([String]) -> Void, failure: @escaping FailureCallBack) {
+    private func allTransactionOfUser(success: @escaping ([Transaction]) -> Void, failure: @escaping FailureCallBack) {
         Task {
-            var allPurchasedProductIds: Set<String> = []
+            var allPurchasedProductIds: [Transaction] = []
             for await result in Transaction.all {
                 switch result {
                 case .unverified(_, let error):
                     debugPrint("Unverified Error: \(error.localizedDescription)")
                     break
                 case .verified(let transaction):
-                    allPurchasedProductIds.insert(transaction.productID)
+                    allPurchasedProductIds.append(transaction)
                 }
             }
             allPurchasedProductIds.isEmpty ? failure("No Plan Purchased before") : success(Array(allPurchasedProductIds))
@@ -240,13 +245,13 @@ extension IAPManager {
     /// This function is for restore purchase
     /// This functions success callback return available productIds that is currently active
     /// This function failure callback return enum in which if user purchased before but that is expired, user never purchased or any other error message
-    func restorePurchases(success: @escaping ([String]) -> Void, failure: @escaping ((RestoreError) -> Void)) {
+    func restorePurchases(success: @escaping ([Transaction]) -> Void, failure: @escaping ((RestoreError) -> Void)) {
         Task {
             do {
                 try await AppStore.sync()
-                self.getActivePlan(success: { purchasedProductIds in
+                self.getActiveTransaction(success: { activeTransaction in
                     DispatchQueue.main.async {
-                        success(purchasedProductIds.map({ $0.productID }))
+                        success(activeTransaction)
                     }
                 }, failure: { error in
                     /// Fetching All transaction of user in this app
